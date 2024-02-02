@@ -1,5 +1,5 @@
 import { User } from "../models/user.model.js";
-import asynchandler from "../utils/asynchandler.js";
+import { asynchandler } from "../utils/asynchandler.js";
 import { ApiResponse, ApiError } from "../utils/response.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
@@ -55,12 +55,12 @@ const registerUser = asynchandler(async (req, res) => {
 const loginUser = asynchandler(async (req, res) => {
   const { phone, email, password } = req.body;
   if ((!phone && !email) || !password) {
-    throw ApiError(
+    throw new ApiError(
       400,
       "please provide eamil or phone number and passowrd to login"
     );
   }
-  const user = User.findOne({
+  const user = await User.findOne({
     $or: [{ phone }, { email }],
   });
   if (!user) {
@@ -71,7 +71,7 @@ const loginUser = asynchandler(async (req, res) => {
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials");
   }
-  const { accessToken, refreshToken } = await generateAccessAndRefereshToken(
+  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
     user._id
   );
 
